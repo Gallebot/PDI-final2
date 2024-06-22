@@ -3,7 +3,6 @@ import tkinter as tk
 from tkinter import ttk
 import random
 import numpy as np
-import math
 
 # Función para pixelar la imagen
 def pixelar(image, block_size):
@@ -126,20 +125,20 @@ def sharpen(image):
 
 # Función para actualizar la imagen según el efecto seleccionado
 def update_image(effect, channel, image):
-    if effect == "Pixelate":
+    if effect == "Pixelar":
         image = pixelar(image, 10)
-    elif effect == "Glass":
+    elif effect == "Cristal a cuadros":
         image = efecto_cristal_cuadros(image, 10)
-    elif effect == "Sharpen":
+    elif effect == "Afilado":
         image = sharpen(image)
     
-    if channel == "Grayscale":
+    if channel == "Escala de grises":
         image = escala_grises(image)
-    elif channel == "Red":
+    elif channel == "Canal Rojo":
         image = canal_r(image)
-    elif channel == "Green":
+    elif channel == "Canal Verde":
         image = canal_g(image)
-    elif channel == "Blue":
+    elif channel == "Canal Azul":
         image = canal_b(image)
 
     return image
