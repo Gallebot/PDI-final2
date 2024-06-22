@@ -1,9 +1,28 @@
 import cv2
 import tkinter as tk
 from tkinter import ttk
-import random
-import math
 import numpy as np
+import math
+
+# Función para detectar el objeto más grande y quitar el fondo
+def quitar_fondo(image):
+    gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+    blurred = cv2.GaussianBlur(gray, (5, 5), 0)
+    edges = cv2.Canny(blurred, 50, 150)
+
+    contours, _ = cv2.findContours(edges, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    if len(contours) == 0:
+        return image
+
+    largest_contour = max(contours, key=cv2.contourArea)
+    mask = np.zeros(image.shape[:2], dtype=np.uint8)
+    cv2.drawContours(mask, [largest_contour], -1, 255, thickness=cv2.FILLED)
+
+    result = cv2.bitwise_and(image, image, mask=mask)
+    background = np.full_like(image, (255, 255, 255))
+    background = cv2.bitwise_and(background, background, mask=~mask)
+
+    return cv2.add(result, background)
 
 # Función para pixelar la imagen
 def pixelar(image, block_size):
@@ -14,7 +33,7 @@ def pixelar(image, block_size):
         for x in range(0, width, block_size):
             block = image[y:y+block_size, x:x+block_size]
             avg_color = block.mean(axis=(0, 1))
-            new_image[y:y+block_size, x:x+block_size] = avg_color
+            new_image[y+y:y+block_size, x:x+block_size] = avg_color
     
     return new_image
 
@@ -311,6 +330,8 @@ def update_image(effect, channel, image):
         image = negativo(image)
     elif effect == "Sepia":
         image = sepia(image)
+    elif effect == "Remove Background":
+        image = quitar_fondo(image)
     
     if channel == "Grayscale":
         image = escala_grises(image)
@@ -350,7 +371,7 @@ window.title("Efectos en Tiempo Real")
 
 effect_var = tk.StringVar(value="None")
 ttk.Label(window, text="Seleccione un efecto:").pack(pady=10)
-effects = ["None", "Pixelate", "Glass", "Cylindrical X", "Cylindrical Y", "Elliptical X", "Elliptical Y", "Bulge", "Ripple", "Wave", "Sobel", "Blur", "Negative", "Sepia"]
+effects = ["None", "Pixelate", "Glass", "Cylindrical X", "Cylindrical Y", "Elliptical X", "Elliptical Y", "Bulge", "Ripple", "Wave", "Sobel", "Blur", "Negative", "Sepia", "Remove Background"]
 for effect in effects:
     ttk.Radiobutton(window, text=effect, variable=effect_var, value=effect).pack(anchor=tk.W)
 
